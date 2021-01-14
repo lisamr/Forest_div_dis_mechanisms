@@ -43,7 +43,7 @@ model{
   zPlot ~ normal(0,1);
   //multinormal prior for varying int & slope
   to_vector(zS) ~ normal(0, 1);
-  sigmaS ~ cauchy(0, 1);
+  sigmaS ~ exponential(1);
   betaS ~ normal(0, 1); 
   LS ~ lkj_corr_cholesky(2);
 

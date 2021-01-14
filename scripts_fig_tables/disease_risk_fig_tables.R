@@ -221,11 +221,11 @@ prow2 <- plot_grid(
     theme(legend.position="none", 
           plot.title = element_text(hjust = 0.5, size = 10),
           axis.title.y = element_blank(), axis.text.y = element_blank()),
-  labels = c("A", "B", "C"),
-  hjust = c(-6.5, -.5, -.5), vjust = 2,
+  labels = c("A", "B"),
+  hjust = c(-6.5, -.5), vjust = 2,
   nrow = 1, rel_widths = c(1,.8), scale = .9
 )
 plot_finished2 <- plot_grid(prow2, legend_h, nrow = 2, rel_heights = c(1, .1))
 plot_finished2
-ggsave2(plot_finished2, width = 140, height = 110, units = 'mm', dpi = 600, filename = '/figures/disease_risk_specieslevel.pdf')
+ggsave2(plot_finished2, width = 140, height = 110, units = 'mm', dpi = 600, filename = 'figures/disease_risk_specieslevel.pdf')
 

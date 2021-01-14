@@ -147,7 +147,7 @@ precis(post_indlevel[[3]], pars = c(c('bBA', 'betap', 'betaS', 'zS')), depth = 3
 #export models--------------------------------------------
 saveRDS(post_plotlevel_all, '../../../Box/Stan_model_outputs/Big_Sur/post_plotlevel_all.RDS')
 saveRDS(post_plotlevel_HS, '../../../Box/Stan_model_outputs/Big_Sur/post_plotlevel_HS.RDS')
-saveRDS(post_indlevel, '../../../Box/Stan_model_outputs/Big_Sur/post_indlevel2.RDS')
+saveRDS(post_indlevel, '../../../Box/Stan_model_outputs/Big_Sur/post_indlevel.RDS')
 
 pdf('figures/PPC_diseaserisk.pdf', width = 6.5, height = 3.5)
 PPC
