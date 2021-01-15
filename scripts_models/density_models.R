@@ -133,56 +133,5 @@ dev.off()
 
 
 
-#unused model------------------------------------------------------------
-#I tried to run the hurdle model with many species together (only 5, excludes redwood), but it wasn't running well (inefficient, not amazing fit). I include it here just in case I'll need it in the future.
 
-#data to be used
-top5 <- c('UMCA', 'LIDE', 'QUAG', 'QUPA', 'ARME')
-BA_top5 <- expand_grid(BSPlotNumber = plot_level$BSPlotNumber, Species = top5) %>% 
-  mutate(plotID = as.integer(as.factor(BSPlotNumber)),
-         spID = as.integer(as.factor(Species))) %>% 
-  left_join(tree_level %>% 
-              filter(Species %in% top5) %>% 
-              group_by(BSPlotNumber, Species) %>% 
-              summarise(BA = sum(basal_area))) %>% 
-  left_join(plot_level %>% select(BSPlotNumber, ForestAllianceType, Richness)) %>% 
-  mutate(Richness_z = zscore(Richness))
-BA_top5$BA[is.na(BA_top5$BA)] <- 0
-
-#data list
-cov_top5 <- cbind(1, BA_top5$ForestAllianceType, BA_top5$Richness_z) #intercept + covariates
-Xsim2 <- expand_grid( #data for posterior predictions 
-  a0 = 1,
-  Forest = c(0,1),
-  Richness_z = seq(min(BA_top5$Richness_z), max(BA_top5$Richness_z), length.out = 10)
-) %>% 
-  slice(rep(row_number(), max(BA_top5$spID)))
-datalist_hurdletop5 <- list(
-  N = nrow(cov_top5),
-  K = ncol(cov_top5),
-  J = max(BA_top5$plotID),
-  S = max(BA_top5$spID),
-  y = BA_top5$BA,
-  X = cov_top5,
-  spID = BA_top5$spID,
-  plotID = BA_top5$plotID,
-  Nsim = nrow(Xsim2),
-  Xsim = as.matrix(Xsim2),
-  spID_sim = rep(1:max(BA_top5$spID), each = nrow(Xsim2)/max(BA_top5$spID))
-)
-
-#run model
-stan_hurdle_manyspp <- stan_model(file = 'Stan_models/basal_area_gamma_hurd_species_studT.stan') #for top 5 species all together
-fit_hurdletop5 <- sampling(stan_hurdle_manyspp, datalist_hurdletop5, iter = 2000, chains = 4, cores = 4, control = list(adapt_delta = .99, max_treedepth = 15), seed = 2021)
-#No divergent transitions or other warnings
-
-#check out
-precis(fit_hurdletop5, depth =3, pars = c('B_bar', 'B','Bz_bar', 'Bz', 'sigma_p', 'sigma_pz', 'sd_j', 'va'), prob = .95)
-pairs(fit_hurdletop5, pars = 'B_bar')
-traceplot(fit_hurdletop5, pars = c('B_bar', 'Bz_bar', 'sigma_p', 'sigma_pz', 'sd_j', 'va'))
-post_species <- extract.samples(fit_hurdletop5)
-ppc_dens_overlay(datalist_hurdletop5$y, post_species$y_rep[1:50,]) + coord_cartesian(xlim = c(0,2))
-ppc_intervals_grouped(datalist_hurdletop5$y, post_species$y_rep, group = datalist_hurdletop5$spID)
-
-saveRDS(fit_hurdletop5, '../../../Box/Stan_model_outputs/Big_Sur/fit_hurdletop5.RDS')
 

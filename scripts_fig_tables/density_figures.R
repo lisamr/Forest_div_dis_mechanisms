@@ -6,12 +6,12 @@ rm(list = ls())
 theme_set(theme_classic())#set ggplot theme
 unzscore <- function(z, x)  z *2*sd(x) + mean(x)
 
-
 #import model fits
 fit_basal_area_all <- readRDS('../../../Box/Stan_model_outputs/Big_Sur/fit_basal_area_all.RDS')
 fit_top6 <- readRDS('../../../Box/Stan_model_outputs/Big_Sur/fit_hurdle_top6spp.RDS')
 fit_HS <- readRDS('../../../Box/Stan_model_outputs/Big_Sur/fit_nindividuals_HS.RDS')
 fit_MS <- readRDS('../../../Box/Stan_model_outputs/Big_Sur/fit_nindividuals_MS.RDS')
+
 
 #import data
 plot_level <- read_csv('data/plot_level_data.csv')
@@ -73,12 +73,13 @@ tidybayes::median_hdci(post_all$B[,2], .width = .9)
 post_spp <- lapply(fit_top6, extract.samples) 
 sapply(post_spp, function(x) tidybayes::median_hdci(x$B[,2], .width = .9)) %>% t
 #y           ymin       ymax        .width .point   .interval
-#ARME 0.08486771  -0.1976215 0.3581919   0.9    "median" "hdci"   
-#LIDE -0.08482223 -0.2917723 0.1351496   0.9    "median" "hdci"   
-#QUAG -0.4623458  -0.831266  -0.09885835 0.9    "median" "hdci"   
-#QUPA -0.1821664  -0.5287347 0.1858088   0.9    "median" "hdci"   
-#SESE -0.06469372 -0.4776241 0.343455    0.9    "median" "hdci"   
-#UMCA -0.1524417  -0.3136554 0.0263978   0.9    "median" "hdci"   
+#ARME 0.08486771  -0.1976215 0.3581919   0.9    "median" "hdci"
+#LIDE -0.08482223 -0.2917723 0.1351496   0.9    "median" "hdci"
+#QUAG -0.4623458  -0.831266  -0.09885835 0.9    "median" "hdci"
+#QUPA -0.1821664  -0.5287347 0.1858088   0.9    "median" "hdci"
+#SESE -0.06469372 -0.4776241 0.343455    0.9    "median" "hdci"
+#UMCA -0.1524417  -0.3136554 0.0263978   0.9    "median" "hdci"
+
 
 #probability of occurrence for top 6 species
 sapply(post_spp, function(x) tidybayes::median_hdci(x$Bz[,2], .width = .9)) %>% t
@@ -107,15 +108,12 @@ tidybayes::median_hdci(post_MS$B[,2], .width = .9)
 
 
 
-
-
-
 #Figure for Basal area or No. individuals--------------------------------------------
 
 #posterior predictive plots
 f_PP <- function(post, newdat = Xsim){ 
   pmu <- apply(post, 2, mean)
-  pCI <- apply(post, 2, HPDI, .95)
+  pCI <- apply(post, 2, HPDI, .9)
   newdat %>% 
     mutate(mean = pmu, lower = pCI[1,], upper = pCI[2,])
 }
@@ -129,10 +127,10 @@ cross_zero <- function(posterior, occurrence = NULL){
 }
 
 #plot figures
-plot_figures <- function(posterior, dat, response, Title, y.axis, legend.loc = 'none', occurrence = NULL){ 
+plot_figures <- function(posterior, dat, response, Title, y.axis, legend.loc = 'none', occurrence = NULL, newdat = Xsim){ 
   if(!is.null(occurrence)) {
-    post_df <- f_PP(posterior$p_sim) } 
-  else{post_df <- f_PP(posterior$mu_sim)} 
+    post_df <- f_PP(posterior$p_sim, newdat) } 
+  else{post_df <- f_PP(posterior$mu_sim, newdat)} 
   response <- enquo(response)
   
   p <- ggplot(post_df, aes(Richness, mean, group = ForestAllianceType)) +
@@ -181,8 +179,6 @@ pMS <- plot_figures(post_MS, plot_level, n_MS, 'Minimally susceptible species', 
 
 
 
-
-
 #Export figures for paper--------
 
 #Basal area + occurence figure
@@ -210,7 +206,21 @@ Fig2 <- plot_grid(pHS + xlab(''),
 
 
 #supplemental figure of all of the top 6 species 
-FigS2 <- plot_grid(plotlist = c(BA_spp_plots, Occurrence_spp_plots), nrow = 2)
+axis_label <- get_title(ggplot(NULL) + labs(title = "Richness") + theme(plot.title = element_text(size = 11, hjust = .5, vjust = 8)) )
+grid1 <- plot_grid(BA_spp_plots[[1]] + labs(x = ''), 
+          BA_spp_plots[[2]]+ labs(x = '', y = ''),
+          BA_spp_plots[[3]]+ labs(x = '', y = ''),
+          BA_spp_plots[[4]]+ labs(x = '', y = ''),
+          BA_spp_plots[[5]]+ labs(x = '', y = ''),
+          BA_spp_plots[[6]]+ labs(x = '', y = ''),
+          Occurrence_spp_plots[[1]] + labs(x = ''), 
+          Occurrence_spp_plots[[2]]+ labs(x = '', y = ''),
+          Occurrence_spp_plots[[3]]+ labs(x = '', y = ''),
+          Occurrence_spp_plots[[4]]+ labs(x = '', y = ''),
+          Occurrence_spp_plots[[5]]+ labs(x = '', y = ''),
+          Occurrence_spp_plots[[6]]+ labs(x = '', y = ''),
+          nrow = 2)
+FigS2 <- plot_grid(grid1, axis_label, nrow = 2, rel_heights = c(.9, .1))
 
 
 #save figures
