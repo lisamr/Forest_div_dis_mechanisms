@@ -9,7 +9,7 @@ library(loo)
 library(flextable)
 library(wesanderson)
 library(cowplot)
-theme_set(theme_classic())#set ggplot theme
+
 
 #load data------------------------------------------------
 plot_level <- read_csv('data/plot_level_data.csv') #data on 151 plots
@@ -38,9 +38,6 @@ make_datlist <- function(predictors, all=T){
     n=n) #total host plants
   return(datlist)
 }
-
-
-
 
 #function for Bernoulli models
 make_datlist_Bern <- function(predictors=NULL){
