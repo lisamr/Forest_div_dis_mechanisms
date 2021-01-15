@@ -12,8 +12,8 @@ library(cowplot)
 theme_set(theme_classic())#set ggplot theme
 
 #load data------------------------------------------------
-plot_level <- read_csv('data/plot_level_data.csv')
-tree_level <- read_csv('data/tree_level_data.csv')
+plot_level <- read_csv('data/plot_level_data.csv') #data on 151 plots
+tree_level <- read_csv('data/tree_level_data_HS.csv') #tree level data of highly susceptible species
 
 
 

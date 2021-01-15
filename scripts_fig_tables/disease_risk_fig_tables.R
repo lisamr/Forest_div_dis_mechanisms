@@ -1,3 +1,5 @@
+#creating supplementary tables with posterior values for the various disease risk models. Also figures of key plot-level and species-level variables. 
+
 rm(list=ls())
 library(rethinking)
 library(tidyverse)
