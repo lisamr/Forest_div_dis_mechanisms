@@ -4,9 +4,7 @@ Model code and data used for the manuscript: "The importance of diversity and it
 ## Data is located in the "data" folder
 - plot_level_data.csv = plot-level attributes  
 - tree_level_data_HS.csv = tree-level attributes of highly susceptible species only  
-- tree_level_data_all.csv = tree-level attributes of all species   
-- dmat.RDS = pairwise distance (km) matrix between plots (additional information for running a model that accounts for spatial autocorrelation. It wasn't necessary for this analysis)  
-
+- tree_level_data_all.csv = tree-level attributes of all species  
 Columns use accronyms or names as described in the manuscript. 
 
 ## Scripts 
