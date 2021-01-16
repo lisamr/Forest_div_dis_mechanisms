@@ -128,13 +128,13 @@ loo_compare(loo_indlevel)
 
 #plot goodness of fit for best performing model
 post <- extract.samples(post_plotlevel_all[[2]])
-ppc1 <- ppc_dens_overlay(datalists_plotlevel_all[[2]]$I, post$y_rep[1:100,]) + labs(title = 'plot-level, \nall hosts')
+ppc1 <- ppc_dens_overlay(datalists_plotlevel_all[[2]]$I, post$y_rep[1:100,]) + labs(title = 'plot-level, \nall hosts') + theme(legend.position = 'none')
 post <- extract.samples(post_plotlevel_HS[[2]])
-ppc2 <- ppc_dens_overlay(datalists_plotlevel_HS[[2]]$I, post$y_rep[1:100,]) + labs(title = 'plot-level, \nhighly symtomatic hosts')
+ppc2 <- ppc_dens_overlay(datalists_plotlevel_HS[[2]]$I, post$y_rep[1:100,]) + labs(title = 'plot-level, \nhighly symtomatic hosts')+ theme(legend.position = 'none')
 post <- extract.samples(post_indlevel[[2]])
-ppc3 <- ppc_dens_overlay(datalists_indlevel[[2]]$I, post$y_rep[1:100,]) + labs(title = 'individual-level, \nhighly symtomatic hosts')
+ppc3 <- ppc_dens_overlay(datalists_indlevel[[2]]$I, post$y_rep[1:100,]) + labs(title = 'individual-level, \nhighly symtomatic hosts')+ theme(legend.position = 'none')
 PPC <- cowplot::plot_grid(ppc1, ppc2, ppc3, 
-                   nrow = 1)
+                   nrow = 1, scale = .9)
 
 #quick look at parameters
 precis(post_plotlevel_all[[1]], pars = c(c('a0', 'beta', 'theta')), depth = 2, prob = .9)
