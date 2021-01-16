@@ -106,7 +106,7 @@ ppc <- function(datalist, fit, title, legend = F){
 ppc_int <- function(datalist, fit, title, legend = F){
   post <- extract.samples(fit)
   p <- ppc_intervals(datalist$y, post$y_rep) +
-    labs(title = title) + 
+    labs(title = title, x = 'Plot index') + 
     theme(title = element_text(size = 8))
   if(legend == F) p <- p + theme(legend.position = 'none')
   return(p)
