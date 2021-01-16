@@ -77,10 +77,10 @@ make_datalists_GLM <- function(response, covariates){
 }
 
 covariates <-  cbind(plot_level$ForestAllianceType, plot_level$Richness_z) #the same for all of the following models
-datalist_gamma <- make_datalists_GLM(BA_all$BA_all, covariates) # 1. BA of all species
-datalist_hurd_sepspp <- lapply(BA_spp_separated, function(x) make_datalists_GLM(x$BA, covariates)) # 2. hurdle model run for each species separately
-datalist_NB_HS <- make_datalists_GLM(as.integer(plot_level$n_HS), covariates) # 3. Number of highly susceptible species
-datalist_NB_MS <- make_datalists_GLM(as.integer(plot_level$n_MS), covariates) # 4. Number of highly susceptible species
+datalist_basal_area_all <- make_datalists_GLM(BA_all$BA_all, covariates) # 1. BA of all species
+datalist_top6 <- lapply(BA_spp_separated, function(x) make_datalists_GLM(x$BA, covariates)) # 2. hurdle model run for each species separately
+datalist_HS <- make_datalists_GLM(as.integer(plot_level$n_HS), covariates) # 3. Number of highly susceptible species
+datalist_MS <- make_datalists_GLM(as.integer(plot_level$n_MS), covariates) # 4. Number of highly susceptible species
 
 
 
@@ -89,10 +89,10 @@ datalist_NB_MS <- make_datalists_GLM(as.integer(plot_level$n_MS), covariates) # 
 #run models------------------------------------------------------------
 
 #fit models
-fit_gamma <- sampling(stan_gamma, datalist_gamma, iter = 2000, chains = 4, cores = 4)
-fit_hurd_sepspp <- lapply(datalist_hurd_sepspp, function(x) sampling(stan_hurdle_singlesp, x, iter = 2000, chains = 4, cores = 4))
-fit_NB_HS <- sampling(stan_NB, datalist_NB_HS, iter = 2000, chains = 4, cores = 4)
-fit_NB_MS <- sampling(stan_NB, datalist_NB_MS, iter = 2000, chains = 4, cores = 4)
+fit_basal_area_all <- sampling(stan_gamma, datalist_basal_area_all, iter = 2000, chains = 4, cores = 4)
+fit_top6 <- lapply(datalist_top6, function(x) sampling(stan_hurdle_singlesp, x, iter = 2000, chains = 4, cores = 4))
+fit_HS <- sampling(stan_NB, datalist_HS, iter = 2000, chains = 4, cores = 4)
+fit_MS <- sampling(stan_NB, datalist_MS, iter = 2000, chains = 4, cores = 4)
 
 #posterior predictive checks
 ppc <- function(datalist, fit, title, legend = F){
@@ -103,13 +103,22 @@ ppc <- function(datalist, fit, title, legend = F){
   if(legend == F) p <- p + theme(legend.position = 'none')
   return(p)
 }
+ppc_int <- function(datalist, fit, title, legend = F){
+  post <- extract.samples(fit)
+  p <- ppc_intervals(datalist$y, post$y_rep) +
+    labs(title = title) + 
+    theme(title = element_text(size = 8))
+  if(legend == F) p <- p + theme(legend.position = 'none')
+  return(p)
+}
 
-p1 = ppc(datalist_gamma, fit_gamma, 'Total basal area of all species')
-p2 = ppc(datalist_NB_HS, fit_NB_HS, 'Number of individuals from \nhighly susceptible species')
-p3 = ppc(datalist_NB_MS, fit_NB_MS, 'Number of individuals from \nminimally susceptible species')
+p1 = ppc(datalist_basal_area_all, fit_basal_area_all, 'Total basal area of all species')
+p2 = ppc(datalist_HS, fit_HS, 'Number of individuals from \nhighly susceptible species')
+p3 = ppc(datalist_MS, fit_MS, 'Number of individuals from \nminimally susceptible species')
 ppc_sepspp = list(NULL)
-for(i in 1:length(datalist_hurd_sepspp)){
-  ppc_sepspp[[i]] <- ppc(datalist_hurd_sepspp[[i]], fit_hurd_sepspp[[i]], names(datalist_hurd_sepspp)[i])
+spp_names <- c('Madrone', 'Tanoak', 'Coast live oak', 'Shreve oak', 'Redwood', 'Bay laurel')
+for(i in 1:length(datalist_top6)){
+  ppc_sepspp[[i]] <- ppc_int(datalist_top6[[i]], fit_top6[[i]], spp_names[i])
 }
 ppc_multiplot1 <- cowplot::plot_grid(plotlist = ppc_sepspp)
 ppc_multiplot2 <- cowplot::plot_grid(p1, p2, p3, nrow = 1)
@@ -122,6 +131,7 @@ saveRDS(fit_gamma, '../../../Box/Stan_model_outputs/Big_Sur/fit_basal_area_all.R
 saveRDS(fit_hurd_sepspp, '../../../Box/Stan_model_outputs/Big_Sur/fit_hurdle_top6spp.RDS')
 saveRDS(fit_NB_HS, '../../../Box/Stan_model_outputs/Big_Sur/fit_nindividuals_HS.RDS')
 saveRDS(fit_NB_MS, '../../../Box/Stan_model_outputs/Big_Sur/fit_nindividuals_MS.RDS')
+
 
 #save posterior predictive checks
 pdf('figures/PPC_density_models1.pdf', width = 6.5, height = 3)
