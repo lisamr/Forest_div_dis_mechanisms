@@ -48,12 +48,9 @@ model {
   va ~ normal(0, 2);
   sd_j ~ normal(0, 1);
   z_j ~ normal(0, 1);
-  B_bar[1] ~ normal(-1, 1); //species intercept
-  for(i in 2:K){
-    B_bar[i] ~ normal(0, 1); //covariates
-  }
+  B_bar ~ normal(0, 1); 
   rho ~ lkj_corr(2);
-  sigma_p ~ normal(0, 2);
+  sigma_p ~ normal(0, 5);
   B ~ multi_student_t(nu, B_bar, quad_form_diag(rho, sigma_p));
   //bernoulli process priors
   nuz ~ gamma(2, .1);
@@ -61,7 +58,7 @@ model {
   z_jz ~ normal(0, 1);
   Bz_bar ~ normal(0, 1);
   rhoz ~ lkj_corr(2);
-  sigma_pz ~ normal(0, 2);
+  sigma_pz ~ normal(0, 5);
   Bz ~ multi_student_t(nuz, Bz_bar, quad_form_diag(rhoz, sigma_pz));
   
   for (i in 1:N){
