@@ -9,7 +9,7 @@ library(wesanderson)
 library(cowplot)
 theme_set(theme_classic())#set ggplot theme
 
-#import model results
+#import model results 
 post_plotlevel_all <- readRDS('../../../Box/Stan_model_outputs/Big_Sur/post_plotlevel_all.RDS')
 post_plotlevel_HS <- readRDS('../../../Box/Stan_model_outputs/Big_Sur/post_plotlevel_HS.RDS')
 post_indlevel <- readRDS('../../../Box/Stan_model_outputs/Big_Sur/post_indlevel.RDS')
@@ -211,7 +211,7 @@ legend_h <- get_legend(p1 + theme(legend.justification="center", legend.text = e
 plot_finished <- plot_grid(prow, legend_h, nrow = 2, rel_heights = c(1, .1))
 plot_finished
 
-ggsave2(plot_finished, width = 173, height = 110, units = 'mm', dpi = 600, filename = 'figures/disease_risk_plotlevel.pdf')
+ggsave2(plot_finished, width = 180, height = 110, units = 'mm', dpi = 600, filename = 'figures/disease_risk_plotlevel.pdf')
 
 
 #SPECIES-LEVEL EFFECTS 
@@ -229,5 +229,6 @@ prow2 <- plot_grid(
 )
 plot_finished2 <- plot_grid(prow2, legend_h, nrow = 2, rel_heights = c(1, .1))
 plot_finished2
+
 ggsave2(plot_finished2, width = 140, height = 110, units = 'mm', dpi = 600, filename = 'figures/disease_risk_specieslevel.pdf')
 

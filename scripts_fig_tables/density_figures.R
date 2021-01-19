@@ -1,6 +1,8 @@
 #Figures for density models
 library(tidyverse)
 library(wesanderson)
+library(cowplot)
+library(rethinking)
 rm(list = ls())
 
 theme_set(theme_classic())#set ggplot theme
@@ -151,58 +153,68 @@ plot_figures <- function(posterior, dat, response, Title, y.axis, legend.loc = '
   return(p)
 }
 
+figure_theme <- theme(title = element_text(size = 7.8), axis.text = element_text(size = 6.5), axis.title = element_text(size = 7.5))
+
 #all species basal area
 basal_area_y <- expression(paste("Basal area (", m^2, ')'))
-plot_BA_all <- plot_figures(post_all, BA_all, BA, 'All species', basal_area_y, legend.loc = 'right')
+plot_BA_all <- plot_figures(post_all, BA_all, BA, 'All species', basal_area_y, legend.loc = 'right') + 
+  figure_theme +
+  theme(legend.text = element_text(size = 6.5))
 
 #top 6 species basal area
 post_spp <- lapply(fit_top6, extract.samples)
 spp_names <- c('Madrone', 'Tanoak', 'Coast live oak', 'Shreve oak', 'Redwood', 'Bay laurel')
 BA_spp_plots <- list(NULL)
 for(i in 1:length(spp_names)){
-  BA_spp_plots[[i]] <- plot_figures(post_spp[[i]], BA_spp_separated[[i]], BA, spp_names[i], basal_area_y)
+  BA_spp_plots[[i]] <- plot_figures(post_spp[[i]], BA_spp_separated[[i]], BA, spp_names[i], basal_area_y) + figure_theme
 }
 plot_grid(plotlist = BA_spp_plots) 
 
 #top 6 species occurrence probability
 Occurrence_spp_plots <- list(NULL)
 for(i in 1:length(spp_names)){
-  Occurrence_spp_plots[[i]] <- plot_figures(post_spp[[i]], Title = spp_names[i], y.axis = 'P(Occurrence)', occurrence = T)
+  Occurrence_spp_plots[[i]] <- plot_figures(post_spp[[i]], Title = spp_names[i], y.axis = 'P(Occurrence)', occurrence = T) + figure_theme
 }
 plot_grid(plotlist = Occurrence_spp_plots) 
 
 
 #Number of Highly and Minimally susceptible species
-pHS <- plot_figures(post_HS, plot_level, n_HS, 'Highly susceptible species', 'No. of individuals')
-pMS <- plot_figures(post_MS, plot_level, n_MS, 'Minimally susceptible species', 'No. of individuals', legend.loc = 'bottom')
+pHS <- plot_figures(post_HS, plot_level, n_HS, 'Highly susceptible species', 'No. of plants') +figure_theme
+pMS <- plot_figures(post_MS, plot_level, n_MS, 'Minimally susceptible species', 'No. of plants', legend.loc = 'bottom') +figure_theme
 
 
 
 
 #Export figures for paper--------
 
-#Basal area + occurence figure
+
+#Basal area + occurence + n.plants figure
 pgrid1 <- plot_grid(
-  BA_spp_plots[[2]]+ xlab(""),
-  BA_spp_plots[[6]] + xlab("") + theme(axis.title.y = element_blank()),
-  plot_BA_all + xlab("") + theme(legend.position = 'none', axis.title.y = element_blank()),
+  plot_BA_all + xlab("") + 
+    theme(legend.position = 'none'),
+  BA_spp_plots[[2]]+ xlab("") + 
+    theme(axis.title.y = element_blank()),
+  BA_spp_plots[[6]] + xlab("") + 
+    theme(axis.title.y = element_blank()),
   nrow = 1
 )
 pgrid2 <- plot_grid(
-  Occurrence_spp_plots[[2]]+ xlab(""), 
-  Occurrence_spp_plots[[6]]+ theme(axis.title.y = element_blank()),
   get_legend(plot_BA_all),
-  nrow = 1
+  Occurrence_spp_plots[[2]], 
+  Occurrence_spp_plots[[6]]+ xlab("") + 
+    theme(axis.title.y = element_blank()) ,
+  nrow = 1, rel_widths = c(.78, .98, .9)
 )
-Fig1 <- plot_grid(pgrid1, pgrid2, nrow = 2)
-
+pgrid3 <- plot_grid(pgrid1, pgrid2, nrow = 2)
 
 #number of individuals
-Fig2 <- plot_grid(pHS + xlab(''), 
-          pMS + theme(legend.position = 'none'),
-          get_legend(pMS),
-          rel_heights = c(1,1,.15),
-          nrow =3)
+pgrid4 <- plot_grid(pHS + xlab('') + figure_theme, 
+                  pMS + theme(legend.position = 'none')+ figure_theme,
+                  nrow = 2)
+
+final_fig <- plot_grid(pgrid3, pgrid4, 
+          nrow = 1, labels = c('A', 'B'),
+          rel_widths = c(2.5, 1), scale = .97)
 
 
 #supplemental figure of all of the top 6 species 
@@ -224,7 +236,6 @@ FigS2 <- plot_grid(grid1, axis_label, nrow = 2, rel_heights = c(.9, .1))
 
 
 #save figures
-ggsave('figures/density_BA_Occurence.pdf', Fig1, width = 6.5, height = 3.5, device = 'pdf')
-ggsave('figures/density_ninds.pdf', Fig2, width = 3, height = 4, device = 'pdf')
+ggsave('figures/all_density_plots.pdf', final_fig, width = 180, height = 90, units = 'mm', dpi = 600, device = 'pdf')
 ggsave('figures/density_top6.pdf', FigS2, width = 10, height = 4, device = 'pdf')
  
