@@ -122,8 +122,8 @@ loo_compare(loo_indlevel)
 #> loo_compare(loo_indlevel)
 #elpd_diff se_diff
 #model2  0.0       0.0   
-#model3 -3.0       2.2   
-#model1 -4.7       2.5 
+#model3 -3.7       2.3   
+#model1 -4.9       2.5  
 
 
 #plot goodness of fit for best performing model
@@ -136,10 +136,10 @@ ppc3 <- ppc_dens_overlay(datalists_indlevel[[2]]$I, post$y_rep[1:100,]) + labs(t
 PPC <- cowplot::plot_grid(ppc1, ppc2, ppc3, 
                    nrow = 1, scale = .9)
 
-#quick look at parameters
+#quick look at parameters (can choose which model and pars to look at)
 precis(post_plotlevel_all[[1]], pars = c(c('a0', 'beta', 'theta')), depth = 2, prob = .9)
 precis(post_indlevel[[3]], pars = c(c('bBA', 'betap', 'betaS', 'zS')), depth = 3, prob = .9)
-
+traceplot(post_indlevel[[3]], pars = c(c('bBA', 'betap', 'betaS', 'zS')))
 
 #export models--------------------------------------------
 saveRDS(post_plotlevel_all, '../../../Box/Stan_model_outputs/Big_Sur/post_plotlevel_all.RDS')

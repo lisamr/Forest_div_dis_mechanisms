@@ -114,17 +114,22 @@ save_as_docx(flextab_bern, path = 'tables/diseaserisk_S3.docx')
 plotlevel_coefs_ODDS <- function(summary_list, Title){
   plotdf <- bind_rows(summary_list) %>% 
     filter(variable %in% c('Richness', "Bay laurel basal area", 'Tanoak basal area', 'Community competency')) %>% 
-    mutate_at(vars(median:upper), inv_logit) %>% 
-    mutate(significant = ifelse(lower<.5 & upper>.5, F, T)) %>% 
+    mutate_at(vars(median:upper), exp) %>% 
+    mutate(significant = ifelse(lower<1 & upper>1, F, T)) %>% 
     mutate_at(vars(model, variable), as.factor) %>% 
     mutate(variable = fct_relevel(variable, 'Richness', "Bay laurel basal area", 'Tanoak basal area', 'Community competency'),
            variable = fct_recode(variable, "Bay laurel \nbasal area" = "Bay laurel basal area", 'Tanoak \nbasal area' = 'Tanoak basal area', 'Community \ncompetency' = 'Community competency'),
            model = fct_relevel(model, 'Richness only', "Richness + density of key hosts"))
   
   ggplot(plotdf, aes(median, fct_rev(variable), color = model)) +
-    geom_vline(xintercept = .5, lty = 3, alpha = .5) +
-    geom_pointrange(aes(xmin = lower, xmax = upper, lty = significant==F), position = position_dodge2(.55, reverse = T)) +
-    scale_linetype(guide = 'none') +
+    geom_vline(xintercept = 1, lty = 1, lwd = .3, color = grey(.7)) +
+    geom_pointrange(aes(xmin = lower, xmax = upper, 
+                        lty = significant==F,
+                        pch = significant==F), 
+                    position = position_dodge2(.55, reverse = T), 
+                    fatten = 2.5) +
+    scale_shape_manual(guide = 'none', values = c(19, 1)) +
+    scale_linetype_manual(guide = 'none', values = c('solid', '11')) +
     scale_color_manual(values = wes_palettes$FantasticFox1[c(1,2,3)], guide = guide_legend(reverse = F)) +
     labs(color = 'Model', x = 'Odds ratio', y = 'Coefficient', title = Title) +
     theme(legend.position = 'bottom', legend.justification='left', legend.direction='horizontal') 
@@ -145,8 +150,8 @@ p3 <- plotlevel_coefs_ODDS(summary_indlevel, 'Individual infection risk \n(highl
 #species intercept and diversity slopes
 plotdf_slope_ODDS <- bind_rows(summary_indlevel) %>% 
   filter(grepl('specific', variable)) %>%  
-  mutate_at(vars(median:upper), inv_logit) %>% 
-  mutate(significant = ifelse(lower<.5 & upper>.5, F, T)) %>% 
+  mutate_at(vars(median:upper), exp) %>% 
+  mutate(significant = ifelse(lower<1 & upper>1, F, T)) %>% 
   mutate_at(vars(model), as.factor) %>% 
   mutate(model = fct_relevel(model, 'Richness only', "Richness + density of key hosts"),
          species = as.factor(gsub("-.*$", '', variable)))
@@ -161,7 +166,7 @@ plotdf_int <- bind_rows(summary_indlevel) %>%
 
 p4 <- plotdf_int %>% 
   ggplot(., aes(median, fct_rev(species), color = model)) +
-  geom_pointrange(aes(xmin = lower, xmax = upper), position = position_dodge2(.55, reverse = T)) +
+  geom_pointrange(aes(xmin = lower, xmax = upper), position = position_dodge2(.55, reverse = T), fatten = 2.5, pch = 19) +
   scale_color_manual(values = wes_palettes$FantasticFox1[c(1,2,3)], guide = guide_legend(reverse = F)) +
   labs(color = 'Model', x = 'Probability of infection', y = 'Species', title = 'Species-specific \ninfection rates') +
   theme(legend.position = 'none') +
@@ -170,15 +175,19 @@ p4 <- plotdf_int %>%
  
 p5_ODDS <- plotdf_slope_ODDS %>% 
   ggplot(., aes(median, fct_rev(species), group = model, color = model)) +
-  geom_vline(xintercept = .5, lty = 3, alpha = .5) +
-  geom_pointrange(aes(xmin = lower, xmax = upper, lty = significant==F), position = position_dodge2(.55, reverse = T)) +
-  scale_linetype(guide = 'none') +
+  geom_vline(xintercept = 1, lty = 1, lwd = .3, color = grey(.7)) +
+  geom_pointrange(aes(xmin = lower, xmax = upper, 
+                      lty = significant==F,
+                      pch = significant==F),
+                      position = position_dodge2(.55, reverse = T), 
+                      fatten = 2.5) +
+  scale_linetype_manual(values = c('solid', '11')) +
+  scale_shape_manual(values = c(19, 1)) +
   scale_color_manual(values = wes_palettes$FantasticFox1[c(1,2,3)], guide = guide_legend(reverse = T)) +
   labs(color = 'Model', x = 'Odds ratio',  title = 'Species-specific \nrichness effects') +
   theme(legend.position = 'none', legend.justification='left', legend.direction='horizontal', 
         axis.title.y = element_blank(), axis.text.y = element_blank())
-
-
+p5_ODDS
 
 
 
