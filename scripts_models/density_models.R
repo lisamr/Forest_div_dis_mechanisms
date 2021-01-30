@@ -38,14 +38,14 @@ BA_all <- tree_level %>%
   summarise(BA_all = sum(basal_area)) %>% 
   left_join(plot_level %>% select(BSPlotNumber, ForestAllianceType, Richness_z))
 
-# 2. BA of each of the top 6 common species, seperate dataframe contained in a list
-top6 <- c("UMCA", "LIDE", "QUAG", "QUPA", "ARME", 'SESE')
+# 2. BA of bay and tanoak, seperate dataframe contained in a list
+top2 <- c("UMCA", "LIDE")
 BA_spp_separated <- expand_grid(BSPlotNumber = plot_level$BSPlotNumber, 
-  Species = top6) %>% 
+  Species = top2) %>% 
   mutate(plotID = as.integer(as.factor(BSPlotNumber)),
          spID = as.integer(as.factor(Species))) %>% 
   left_join(tree_level %>% 
-              filter(Species %in% top6) %>% 
+              filter(Species %in% top2) %>% 
               group_by(BSPlotNumber, Species) %>% 
               summarise(BA = sum(basal_area))) %>% 
   left_join(plot_level %>% select(BSPlotNumber, ForestAllianceType, Richness_z)) %>% 
@@ -78,7 +78,7 @@ make_datalists_GLM <- function(response, covariates){
 
 covariates <-  cbind(plot_level$ForestAllianceType, plot_level$Richness_z) #the same for all of the following models
 datalist_basal_area_all <- make_datalists_GLM(BA_all$BA_all, covariates) # 1. BA of all species
-datalist_top6 <- lapply(BA_spp_separated, function(x) make_datalists_GLM(x$BA, covariates)) # 2. hurdle model run for each species separately
+datalist_top2 <- lapply(BA_spp_separated, function(x) make_datalists_GLM(x$BA, covariates)) # 2. hurdle model run for each species separately
 datalist_HS <- make_datalists_GLM(as.integer(plot_level$n_HS), covariates) # 3. Number of highly susceptible species
 datalist_MS <- make_datalists_GLM(as.integer(plot_level$n_MS), covariates) # 4. Number of highly susceptible species
 
@@ -90,7 +90,7 @@ datalist_MS <- make_datalists_GLM(as.integer(plot_level$n_MS), covariates) # 4. 
 
 #fit models
 fit_basal_area_all <- sampling(stan_gamma, datalist_basal_area_all, iter = 2000, chains = 4, cores = 4)
-fit_top6 <- lapply(datalist_top6, function(x) sampling(stan_hurdle_singlesp, x, iter = 2000, chains = 4, cores = 4))
+fit_top2 <- lapply(datalist_top2, function(x) sampling(stan_hurdle_singlesp, x, iter = 2000, chains = 4, cores = 4))
 fit_HS <- sampling(stan_NB, datalist_HS, iter = 2000, chains = 4, cores = 4)
 fit_MS <- sampling(stan_NB, datalist_MS, iter = 2000, chains = 4, cores = 4)
 
@@ -116,9 +116,9 @@ p1 = ppc(datalist_basal_area_all, fit_basal_area_all, 'Total basal area of all s
 p2 = ppc(datalist_HS, fit_HS, 'Number of individuals from \nhighly susceptible species')
 p3 = ppc(datalist_MS, fit_MS, 'Number of individuals from \nminimally susceptible species')
 ppc_sepspp = list(NULL)
-spp_names <- c('Madrone', 'Tanoak', 'Coast live oak', 'Shreve oak', 'Redwood', 'Bay laurel')
-for(i in 1:length(datalist_top6)){
-  ppc_sepspp[[i]] <- ppc_int(datalist_top6[[i]], fit_top6[[i]], spp_names[i])
+spp_names <- c('Tanoak', 'Bay laurel')
+for(i in 1:length(datalist_top2)){
+  ppc_sepspp[[i]] <- ppc_int(datalist_top2[[i]], fit_top2[[i]], spp_names[i])
 }
 ppc_multiplot1 <- cowplot::plot_grid(plotlist = ppc_sepspp)
 ppc_multiplot2 <- cowplot::plot_grid(p1, p2, p3, nrow = 1)
@@ -128,13 +128,13 @@ ppc_multiplot2 <- cowplot::plot_grid(p1, p2, p3, nrow = 1)
 
 #save models
 saveRDS(fit_gamma, '../../../Box/Stan_model_outputs/Big_Sur/fit_basal_area_all.RDS')
-saveRDS(fit_hurd_sepspp, '../../../Box/Stan_model_outputs/Big_Sur/fit_hurdle_top6spp.RDS')
+saveRDS(fit_top2, '../../../Box/Stan_model_outputs/Big_Sur/fit_hurdle_top2spp.RDS')
 saveRDS(fit_NB_HS, '../../../Box/Stan_model_outputs/Big_Sur/fit_nindividuals_HS.RDS')
 saveRDS(fit_NB_MS, '../../../Box/Stan_model_outputs/Big_Sur/fit_nindividuals_MS.RDS')
 
 
 #save posterior predictive checks
-pdf('figures/PPC_density_models1.pdf', width = 6.5, height = 3)
+pdf('figures/PPC_density_models1.pdf', width = 4.5, height = 2)
 ppc_multiplot1
 dev.off()
 pdf('figures/PPC_density_models2.pdf', width = 6.5, height = 2)

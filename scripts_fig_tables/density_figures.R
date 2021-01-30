@@ -10,7 +10,7 @@ unzscore <- function(z, x)  z *2*sd(x) + mean(x)
 
 #import model fits
 fit_basal_area_all <- readRDS('../../../Box/Stan_model_outputs/Big_Sur/fit_basal_area_all.RDS')
-fit_top6 <- readRDS('../../../Box/Stan_model_outputs/Big_Sur/fit_hurdle_top6spp.RDS')
+fit_top2 <- readRDS('../../../Box/Stan_model_outputs/Big_Sur/fit_hurdle_top2spp.RDS')
 fit_HS <- readRDS('../../../Box/Stan_model_outputs/Big_Sur/fit_nindividuals_HS.RDS')
 fit_MS <- readRDS('../../../Box/Stan_model_outputs/Big_Sur/fit_nindividuals_MS.RDS')
 
@@ -39,14 +39,14 @@ BA_all <- tree_level %>%
   summarise(BA = sum(basal_area)) %>% 
   left_join(plot_level %>% select(BSPlotNumber, ForestAllianceType, Richness, Richness_z))
 
-# 2. BA and occurence of each of the top 6 common species, seperate dataframe contained in a list
-top6 <- c("UMCA", "LIDE", "QUAG", "QUPA", "ARME", 'SESE')
+# 2. BA and occurence of each of the top 2 common species, seperate dataframe contained in a list
+top2 <- c("UMCA", "LIDE")
 spp_separated <- expand_grid(BSPlotNumber = plot_level$BSPlotNumber, 
-                                Species = top6) %>% 
+                                Species = top2) %>% 
   mutate(plotID = as.integer(as.factor(BSPlotNumber)),
          spID = as.integer(as.factor(Species))) %>% 
   left_join(tree_level %>% 
-              filter(Species %in% top6) %>% 
+              filter(Species %in% top2) %>% 
               group_by(BSPlotNumber, Species) %>% 
               summarise(BA = sum(basal_area))) %>% 
   left_join(plot_level %>% select(BSPlotNumber, ForestAllianceType, Richness, Richness_z)) %>% 
@@ -72,26 +72,18 @@ tidybayes::median_hdci(post_all$B[,2], .width = .9)
 #1 -0.02501688 -0.1618321 0.1067124    0.9 median      hdci
 
 #basal area of top 6 species
-post_spp <- lapply(fit_top6, extract.samples) 
+post_spp <- lapply(fit_top2, extract.samples) 
 sapply(post_spp, function(x) tidybayes::median_hdci(x$B[,2], .width = .9)) %>% t
-#y           ymin       ymax        .width .point   .interval
-#ARME 0.08486771  -0.1976215 0.3581919   0.9    "median" "hdci"
-#LIDE -0.08482223 -0.2917723 0.1351496   0.9    "median" "hdci"
-#QUAG -0.4623458  -0.831266  -0.09885835 0.9    "median" "hdci"
-#QUPA -0.1821664  -0.5287347 0.1858088   0.9    "median" "hdci"
-#SESE -0.06469372 -0.4776241 0.343455    0.9    "median" "hdci"
-#UMCA -0.1524417  -0.3136554 0.0263978   0.9    "median" "hdci"
+#y           ymin       ymax       .width .point   .interval
+#LIDE -0.08415664 -0.3109878 0.1239744  0.9    "median" "hdci"   
+#UMCA -0.1522891  -0.3165018 0.02670722 0.9    "median" "hdci"  
 
 
 #probability of occurrence for top 6 species
 sapply(post_spp, function(x) tidybayes::median_hdci(x$Bz[,2], .width = .9)) %>% t
 #y          ymin       ymax       .width .point   .interval
-#ARME -1.848206  -2.576201  -1.142565  0.9    "median" "hdci"   
-#LIDE -0.5257579 -1.126284  0.04436544 0.9    "median" "hdci"   
-#QUAG -0.5155101 -1.117727  0.07879479 0.9    "median" "hdci"   
-#QUPA -1.286342  -1.894791  -0.7171985 0.9    "median" "hdci"   
-#SESE -0.1720305 -0.9321409 0.5661623  0.9    "median" "hdci"   
-#UMCA -1.846928  -2.634078  -1.102452  0.9    "median" "hdci"   
+#LIDE -0.5233184 -1.145344 0.08991939 0.9    "median" "hdci"
+#UMCA -1.864078  -2.666625 -1.073383  0.9    "median" "hdci" 
 
 
 #Highly susceptible individuals
@@ -153,7 +145,7 @@ plot_figures <- function(posterior, dat, response, Title, y.axis, legend.loc = '
   return(p)
 }
 
-figure_theme <- theme(title = element_text(size = 7.8), axis.text = element_text(size = 6.5), axis.title = element_text(size = 7.5))
+figure_theme <- theme(title = element_text(size = 7.5), axis.text = element_text(size = 6.5), axis.title = element_text(size = 7.5))
 
 #all species basal area
 basal_area_y <- expression(paste("Basal area (", m^2, ')'))
@@ -161,9 +153,9 @@ plot_BA_all <- plot_figures(post_all, BA_all, BA, 'All species', basal_area_y, l
   figure_theme +
   theme(legend.text = element_text(size = 6.5))
 
-#top 6 species basal area
-post_spp <- lapply(fit_top6, extract.samples)
-spp_names <- c('Madrone', 'Tanoak', 'Coast live oak', 'Shreve oak', 'Redwood', 'Bay laurel')
+#top 2 species basal area
+post_spp <- lapply(fit_top2, extract.samples)
+spp_names <- c('Tanoak', 'Bay laurel')
 BA_spp_plots <- list(NULL)
 for(i in 1:length(spp_names)){
   BA_spp_plots[[i]] <- plot_figures(post_spp[[i]], BA_spp_separated[[i]], BA, spp_names[i], basal_area_y) + figure_theme
@@ -179,8 +171,8 @@ plot_grid(plotlist = Occurrence_spp_plots)
 
 
 #Number of Highly and Minimally susceptible species
-pHS <- plot_figures(post_HS, plot_level, n_HS, 'Highly susceptible species', 'No. of plants') +figure_theme
-pMS <- plot_figures(post_MS, plot_level, n_MS, 'Minimally susceptible species', 'No. of plants', legend.loc = 'bottom') +figure_theme
+pHS <- plot_figures(post_HS, plot_level, n_HS, 'Commonly symptomatic hosts', 'No. of plants') +figure_theme
+pMS <- plot_figures(post_MS, plot_level, n_MS, 'Rarely symptomatic hosts', 'No. of plants', legend.loc = 'bottom') +figure_theme
 
 
 
@@ -192,16 +184,16 @@ pMS <- plot_figures(post_MS, plot_level, n_MS, 'Minimally susceptible species', 
 pgrid1 <- plot_grid(
   plot_BA_all + xlab("") + 
     theme(legend.position = 'none'),
-  BA_spp_plots[[2]]+ xlab("") + 
+  BA_spp_plots[[1]]+ xlab("") + 
     theme(axis.title.y = element_blank()),
-  BA_spp_plots[[6]] + xlab("") + 
+  BA_spp_plots[[2]] + xlab("") + 
     theme(axis.title.y = element_blank()),
   nrow = 1
 )
 pgrid2 <- plot_grid(
   get_legend(plot_BA_all),
-  Occurrence_spp_plots[[2]], 
-  Occurrence_spp_plots[[6]]+ xlab("") + 
+  Occurrence_spp_plots[[1]], 
+  Occurrence_spp_plots[[2]]+ xlab("") + 
     theme(axis.title.y = element_blank()) ,
   nrow = 1, rel_widths = c(.78, .98, .9)
 )
@@ -217,25 +209,6 @@ final_fig <- plot_grid(pgrid3, pgrid4,
           rel_widths = c(2.5, 1), scale = .97)
 
 
-#supplemental figure of all of the top 6 species 
-axis_label <- get_title(ggplot(NULL) + labs(title = "Richness") + theme(plot.title = element_text(size = 11, hjust = .5, vjust = 8)) )
-grid1 <- plot_grid(BA_spp_plots[[1]] + labs(x = ''), 
-          BA_spp_plots[[2]]+ labs(x = '', y = ''),
-          BA_spp_plots[[3]]+ labs(x = '', y = ''),
-          BA_spp_plots[[4]]+ labs(x = '', y = ''),
-          BA_spp_plots[[5]]+ labs(x = '', y = ''),
-          BA_spp_plots[[6]]+ labs(x = '', y = ''),
-          Occurrence_spp_plots[[1]] + labs(x = ''), 
-          Occurrence_spp_plots[[2]]+ labs(x = '', y = ''),
-          Occurrence_spp_plots[[3]]+ labs(x = '', y = ''),
-          Occurrence_spp_plots[[4]]+ labs(x = '', y = ''),
-          Occurrence_spp_plots[[5]]+ labs(x = '', y = ''),
-          Occurrence_spp_plots[[6]]+ labs(x = '', y = ''),
-          nrow = 2)
-FigS2 <- plot_grid(grid1, axis_label, nrow = 2, rel_heights = c(.9, .1))
-
 
 #save figures
 ggsave('figures/all_density_plots.pdf', final_fig, width = 180, height = 90, units = 'mm', dpi = 600, device = 'pdf')
-ggsave('figures/density_top6.pdf', FigS2, width = 10, height = 4, device = 'pdf')
- 

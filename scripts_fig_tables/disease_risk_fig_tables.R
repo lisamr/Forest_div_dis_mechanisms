@@ -136,11 +136,11 @@ plotlevel_coefs_ODDS <- function(summary_list, Title){
 }
 
 p1 <- plotlevel_coefs_ODDS(summary_plotlevel_all, 'Plot infection prevalence \n(all hosts)')
-p2 <- plotlevel_coefs_ODDS(summary_plotlevel_HS, 'Plot infection prevalence \n(highly susceptible hosts)')
+p2 <- plotlevel_coefs_ODDS(summary_plotlevel_HS, 'Plot infection prevalence \n(commonly symptomatic hosts)')
 for(i in 1:3){
   summary_indlevel[[i]]$variable <- recode(summary_indlevel[[i]]$variable,  'Mean effect of richness' = "Richness" )
 }
-p3 <- plotlevel_coefs_ODDS(summary_indlevel, 'Individual infection risk \n(highly susceptible hosts)')
+p3 <- plotlevel_coefs_ODDS(summary_indlevel, 'Individual infection risk \n(commonly symptomatic hosts)')
 
 
 
