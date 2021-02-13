@@ -145,7 +145,7 @@ plot_figures <- function(posterior, dat, response, Title, y.axis, legend.loc = '
   return(p)
 }
 
-figure_theme <- theme(title = element_text(size = 7.5), axis.text = element_text(size = 6.5), axis.title = element_text(size = 7.5))
+figure_theme <- theme(title = element_text(size = 7), axis.text = element_text(size = 6.5), axis.title = element_text(size = 7))
 
 #all species basal area
 basal_area_y <- expression(paste("Basal area (", m^2, ')'))
@@ -206,9 +206,9 @@ pgrid4 <- plot_grid(pHS + xlab('') + figure_theme,
 
 final_fig <- plot_grid(pgrid3, pgrid4, 
           nrow = 1, labels = c('A', 'B'),
-          rel_widths = c(2.5, 1), scale = .97)
+          rel_widths = c(2.0, .7), scale = .9)
 
 
 
 #save figures
-ggsave('figures/all_density_plots.pdf', final_fig, width = 180, height = 90, units = 'mm', dpi = 600, device = 'pdf')
+ggsave('figures/all_density_plots.pdf', final_fig, width = 173, height = 87, units = 'mm', dpi = 600, device = 'pdf')

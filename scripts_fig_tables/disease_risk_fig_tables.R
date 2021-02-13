@@ -99,9 +99,9 @@ parnames_bern <- c('Tanoak intercept', 'Coast live oak intercept', 'Shreve oak i
 flextab_bern <- make_table(summary_indlevel, 'Posterior estimates (median log-odds, 90% HDPI): Individual-level infection risk for susceptible species', parnames_bern)
 
 
-save_as_docx(flextab_binom_all, path = 'tables/diseaserisk_S1.docx')
-save_as_docx(flextab_binom_HS, path = 'tables/diseaserisk_S2.docx')
-save_as_docx(flextab_bern, path = 'tables/diseaserisk_S3.docx')
+#save_as_docx(flextab_binom_all, path = 'tables/diseaserisk_S1.docx')
+#save_as_docx(flextab_binom_HS, path = 'tables/diseaserisk_S2.docx')
+#save_as_docx(flextab_bern, path = 'tables/diseaserisk_S3.docx')
 
 
 
@@ -172,7 +172,6 @@ p4 <- plotdf_int %>%
   theme(legend.position = 'none') +
   scale_x_continuous(limits = c(0,1))
 
- 
 p5_ODDS <- plotdf_slope_ODDS %>% 
   ggplot(., aes(median, fct_rev(species), group = model, color = model)) +
   geom_vline(xintercept = 1, lty = 1, lwd = .3, color = grey(.7)) +
@@ -181,12 +180,13 @@ p5_ODDS <- plotdf_slope_ODDS %>%
                       pch = significant==F),
                       position = position_dodge2(.55, reverse = T), 
                       fatten = 2.5) +
-  scale_linetype_manual(values = c('solid', '11')) +
-  scale_shape_manual(values = c(19, 1)) +
-  scale_color_manual(values = wes_palettes$FantasticFox1[c(1,2,3)], guide = guide_legend(reverse = T)) +
+  scale_linetype_manual(guide = 'none', values = c('solid', '11')) +
+  scale_shape_manual(guide = 'none', values = c(19, 1)) +
+  scale_color_manual(values = wes_palettes$FantasticFox1[c(1,2,3)], guide = guide_legend(reverse = F), labels = c('Richness only', 'Richness + \ndensity of key hosts', 'Richness + \ncommunity competency')) +
   labs(color = 'Model', x = 'Odds ratio',  title = 'Species-specific \nrichness effects') +
-  theme(legend.position = 'none', legend.justification='left', legend.direction='horizontal', 
-        axis.title.y = element_blank(), axis.text.y = element_blank())
+  theme(legend.position ='bottom',  
+        axis.title.y = element_blank(), 
+        axis.text.y = element_blank())
 p5_ODDS
 
 
@@ -199,15 +199,15 @@ p5_ODDS
 # arrange the plots in a single row
 prow <- plot_grid(
   p1 + 
-    theme(legend.position="none", plot.title = element_text(hjust = 0.5, size = 10)) +
+    theme(legend.position="none", plot.title = element_text(hjust = 0.5, size = 9)) +
     xlab(''),
   p2 + 
     theme(legend.position="none", 
-          plot.title = element_text(hjust = 0.5, size = 10),
+          plot.title = element_text(hjust = 0.5, size = 9),
           axis.title.y = element_blank(), axis.text.y = element_blank()),
   p3 + 
     theme(legend.position="none", 
-          plot.title = element_text(hjust = 0.5, size = 10),
+          plot.title = element_text(hjust = 0.5, size = 9),
           axis.title.y = element_blank(), axis.text.y = element_blank())+
     xlab(''),
   labels = c("A", "B", "C"),
@@ -220,24 +220,31 @@ legend_h <- get_legend(p1 + theme(legend.justification="center", legend.text = e
 plot_finished <- plot_grid(prow, legend_h, nrow = 2, rel_heights = c(1, .1))
 plot_finished
 
-ggsave2(plot_finished, width = 180, height = 110, units = 'mm', dpi = 600, filename = 'figures/disease_risk_plotlevel.pdf')
+ggsave2(plot_finished, width = 173, height = 110, units = 'mm', dpi = 600, filename = 'figures/disease_risk_plotlevel.pdf')
 
 
 #SPECIES-LEVEL EFFECTS 
 # arrange the plots in a single row
 prow2 <- plot_grid(
   p4 + 
-    theme(legend.position="none", plot.title = element_text(hjust = 0.5, size = 10)),
+    theme(legend.position="none", 
+          plot.title = element_text(hjust = 0.5, size = 9),
+          axis.text = element_text(size = 7),
+          axis.title = element_text(size = 8)),
   p5_ODDS + 
     theme(legend.position="none", 
-          plot.title = element_text(hjust = 0.5, size = 10),
-          axis.title.y = element_blank(), axis.text.y = element_blank()),
+          plot.title = element_text(hjust = 0.5, size = 9),
+          axis.title.y = element_blank(), 
+          axis.text.y = element_blank(),
+          axis.text = element_text(size = 7),
+          axis.title = element_text(size = 8)),
   labels = c("A", "B"),
   hjust = c(-6.5, -.5), vjust = 2,
-  nrow = 1, rel_widths = c(1,.8), scale = .9
+  nrow = 1, rel_widths = c(1,.7), scale = .9
 )
-plot_finished2 <- plot_grid(prow2, legend_h, nrow = 2, rel_heights = c(1, .1))
+legend_h2 <- get_legend(p5_ODDS + theme(legend.justification="center", legend.text = element_text(size = 7), legend.title = element_text(size = 8))) 
+plot_finished2 <- plot_grid(prow2, legend_h2, nrow = 2, rel_heights = c(1, .1))
 plot_finished2
 
-ggsave2(plot_finished2, width = 140, height = 110, units = 'mm', dpi = 600, filename = 'figures/disease_risk_specieslevel.pdf')
+ggsave2(plot_finished2, width = 110, height = 86, units = 'mm', dpi = 600, filename = 'figures/disease_risk_specieslevel.pdf')
 
