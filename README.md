@@ -18,10 +18,10 @@ Analysis covers models used to assess:
 
 1. the relationship between various forms of density and diversity,   
 2. community competence and diversity,  
-3. factors that control disease risk at the individual and plot level. The disease risk models used in the main text are called 'disease_risk_models'. Gaussian process models were also used to test if including a spatially weighted term changed the posteriors (it didn't).  
+3. factors that control disease risk at the individual and plot level. Included are he disease risk models used in the main text, as well as Gaussian process models, which were used to test if including a spatially weighted term changed the posteriors (it didn't).  
 Files are named accordingly.  
 
-I would run the model scripts first, save the model fits in another folder (in the cloud for me), and then read in the models fits again when creating the figures. Make sure to alter your directory when/if you want to save the models.  
+I would run the model scripts first, save the model fits in another folder outside of this repository, and then read in the models fits again when creating the figures. Make sure to alter your directory when/if you want to save the models.  
 
 
 
