@@ -3,16 +3,26 @@ Model code and data used for the manuscript: "The importance of diversity and it
 
 ## Data is located in the "data" folder
 - plot_level_data.csv = plot-level attributes  
-- tree_level_data_HS.csv = tree-level attributes of highly susceptible species only  
+- tree_level_data_HS.csv = tree-level attributes of highly/commonly symptomatic species only  
 - tree_level_data_all.csv = tree-level attributes of all species  
 Columns use accronyms or names as described in the manuscript. 
+- PA_matrix.csv = Presence/absence matrix of species  
+- sporangia_estimates.csv = mean, sd of sporulation estimates; derived from Rosenthal et al. (in press, Plant Disease)  
+- dmat.RDS = matrix of pairwise distances between plots, used for spatial disease risk models (see Appendix S1)  
+
+Column names use the same terminology as described in the manuscript.  
 
 ## Scripts 
-Analysis covers models used to assess   
-1. the relationship between various forms of density and diversity and   
-2. factors that control disease risk at the individual and plot level. Files are named accordingly.  
-
 Scripts used to run the models are located in the "scripts_models" folder and for figures/tables, in the "scripts_fig_tables". Stan models are located in the "Stan_models" folder.  
+
+Analysis covers models used to assess:  
+
+1. the relationship between various forms of density and diversity,   
+2. community competence and diversity,  
+3. factors that control disease risk at the individual and plot level. The disease risk models used in the main text are called 'disease_risk_models'. Gaussian process models were also used to test if including a spatially weighted term changed the posteriors (it didn't).  
+Files are named accordingly.  
+
+
 
 ----
 Please contact Lrosenthal@ucdavis.edu for more information.  
