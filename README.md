@@ -1,5 +1,5 @@
 # Forest_div_dis_mechanisms
-Model code and data used for the manuscript: "The importance of diversity and its inferred mechanisms on forest disease risk depend on how disease is measured"
+Model code and data used for the manuscript: "Direction and underlying mechanisms of the diversity-disease relationship are distinct across hierarchical scales"
 
 ## Data is located in the "data" folder
 - plot_level_data.csv = plot-level attributes  
