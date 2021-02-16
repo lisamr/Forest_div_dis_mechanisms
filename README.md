@@ -5,12 +5,11 @@ Model code and data used for the manuscript: "Direction and underlying mechanism
 - plot_level_data.csv = plot-level attributes  
 - tree_level_data_HS.csv = tree-level attributes of highly/commonly symptomatic species only  
 - tree_level_data_all.csv = tree-level attributes of all species  
-Columns use accronyms or names as described in the manuscript. 
 - PA_matrix.csv = Presence/absence matrix of species  
 - sporangia_estimates.csv = mean, sd of sporulation estimates; derived from Rosenthal et al. (in press, Plant Disease)  
 - dmat.RDS = matrix of pairwise distances between plots, used for spatial disease risk models (see Appendix S1)  
 
-Column names use the same terminology as described in the manuscript.  
+Columns use accronyms or names as described in the manuscript.  
 
 ## Scripts 
 Scripts used to run the models are located in the "scripts_models" folder and for figures/tables, in the "scripts_fig_tables". Stan models are located in the "Stan_models" folder.  
