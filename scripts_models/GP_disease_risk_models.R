@@ -80,10 +80,10 @@ datalists_indlevel <- make_datlist_Bern(c('BA_UMCAsqrt_z', 'BA_LIDEsqrt_z'))
 #models---------------------------------------------------
 
 #gaussian process beta-binomial model
-stan_betaBinom <- stan_model(file = 'scripts_2020/Stan_models/binomial_snapshot/beta_binomialGP.stan')
+stan_betaBinom <- stan_model(file = 'Stan_models/beta_binomialGP.stan')
 
 #gaussian process Bernoulli model with varying diversity slopes and individual-level basal area
-stan_bern <- stan_model(file = 'scripts_2020/Stan_models/bernoulli_snapshot/bernoulli_varyingslopeGPnc.stan')
+stan_bern <- stan_model(file = 'Stan_models/bernoulli_varyingslopeGPnc.stan')
 
 
 
