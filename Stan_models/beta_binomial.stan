@@ -26,7 +26,7 @@ transformed parameters{
 }
 model{
   a0 ~ normal(0, 1);
-  beta ~ normal(0, .5);
+  beta ~ normal(0, 1);
   phi ~ exponential(.5); //prior from McElreath ed. 2, pg. 371. I made it wider by a little.
   
   target += beta_binomial_lpmf(I | n, Alpha, Beta);
