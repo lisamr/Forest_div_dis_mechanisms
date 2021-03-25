@@ -15,12 +15,17 @@ library(cowplot)
 plot_level <- read_csv('data/plot_level_data.csv') #data on 151 plots
 tree_level <- read_csv('data/tree_level_data_HS.csv') #tree level data of highly susceptible species
 
-#for model 2B, add a column for infected bay laurels to plot level data
-plot_level <- plot_level %>% 
-  left_join(tree_level %>%
-              group_by(BSPlotNumber) %>% 
-              summarise(I_UMCA = sum(I[Species == 'UMCA']))
-            )
+#for model 2B-D, add a column to plot level data for...
+# - number of infected bay laurels 
+# - basal area of infected plants
+# - basal area of infected bay laurel
+newcols <- tree_level %>%
+  group_by(BSPlotNumber) %>% 
+  summarise(I_UMCA = sum(I[Species == 'UMCA']),
+            BA_I = sum(basal_area[I == 1]),
+            BA_I.UMCA = sum(basal_area[I == 1 & Species == 'UMCA']))
+
+plot_level <- left_join(plot_level, newcols)
 
 
 #create data lists----------------------------------------
@@ -68,14 +73,15 @@ make_datlist_Bern <- function(predictors=NULL){
 }
 
 
-#function for the negative binomial models
-make_datlist_NB <- function(predictors){
+#function for the negative binomial and gamma models (density of infected plants)
+make_datlist_density <- function(predictors, response){
   plot_level_mat <- as.matrix(select(plot_level, plot_vars, predictors))
   datlist <- list(
     N=nrow(plot_level_mat), #number of plots
     K=ncol(plot_level_mat), #number of predictors
-    y = I, #response (number of infections)
-    X=plot_level_mat) #covariate matrix
+    y = response, #response (number of infections)
+    X=plot_level_mat #covariate matrix
+    ) 
   return(datlist)
 }
 
@@ -86,11 +92,17 @@ contrasting_models_bern <- list(NULL, c('BA_UMCAsqrt_z', 'BA_LIDEsqrt_z'), 'ccom
 
 # 1A. Plot-level prevalence models, all hosts
 datalists_plotlevel_all <- lapply(contrasting_models, function(x) make_datlist(x, all = T))
-
 # 1B. Plot-level prevalence models, highly symptomatic hosts only
 datalists_plotlevel_HS <- lapply(contrasting_models, function(x) make_datlist(x, all = F))
 
-# 2A. Total density of infected individuals
+# 2A. Total number of infected individuals
+datalists_number_I <- lapply(contrasting_models, function(x) make_datlist_density(x, plot_level$I_all))
+# 2B. Total number of infected UMCA individuals
+datalists_number_IUMCA <- lapply(contrasting_models, function(x) make_datlist_density(x, plot_level$I_UMCA))
+# 2C. Basal area of infected plants
+datalists_BA_I <- lapply(contrasting_models, function(x) make_datlist_density(x, plot_level$BA_I))
+# 2D. Basal area of infected UMCA plants
+datalists_BA_I_UMCA <- lapply(contrasting_models, function(x) make_datlist_density(x, plot_level$BA_I.UMCA))
 
 # 3. individual-level models, highly symptomatic hosts
 datalists_indlevel <- lapply(contrasting_models_bern, make_datlist_Bern)
@@ -105,7 +117,11 @@ stan_betaBinom <- stan_model(file = 'Stan_models/beta_binomial.stan')
 #Bernoulli model with varying diversity slopes and individual-level basal area
 stan_bern <- stan_model(file = 'Stan_models/bernoulli_varyingslopeBA_nc.stan')
 
+#Negative binomial model #make sure to comment out Nsim and Xsim. I'll proabably just make another script without simulating data.
+stan_NB <- stan_model(file = 'Stan_models/nindividuals_NB.stan')
 
+#gamma model#make sure to comment out Nsim and Xsim. 
+stan_gamma <- stan_model(file = 'Stan_models/basal_area_gamma.stan')
 
 
 #fit models-----------------------------------------------
@@ -120,6 +136,14 @@ ffit <- function(Dlist, Stanmod, iter = 2000, chains = 4, ...){
 post_plotlevel_all <- lapply(datalists_plotlevel_all, function(x) ffit(x, stan_betaBinom))
 post_plotlevel_HS <- lapply(datalists_plotlevel_HS, function(x) ffit(x, stan_betaBinom))
 post_indlevel <- lapply(datalists_indlevel, function(x) ffit(x, stan_bern, control = list(adapt_delta = .99)))
+
+#run the new models 
+#NB models... undefined values:  log_lik[1], etc.
+post_number_I <- lapply(datalists_number_I, function(x) ffit(x, stan_NB))
+post_number_IUMCA <- lapply(datalists_number_IUMCA, function(x) ffit(x, stan_NB))
+post_BA_I <- lapply(datalists_BA_I, function(x) ffit(x, stan_gamma))
+post_BA_IUMCA <- lapply(datalists_BA_I_UMCA, function(x) ffit(x, stan_gamma)) #Rhats in the 1000s!
+
 
 
 #Contrast model performance
@@ -145,6 +169,17 @@ loo_compare(loo_indlevel)
 #model2  0.0       0.0   
 #model3 -3.7       2.3   
 #model1 -4.9       2.5  
+
+
+#new contrasts
+loo_number_I <- lapply(post_number_I, loo)
+loo_compare(loo_number_I)
+loo_BA_I <- lapply(post_BA_I, loo)
+loo_compare(loo_BA_I)
+
+
+precis(post_BA_I[[1]], pars = c(c('a0', 'B', 'va')), depth = 2, prob = .9)
+precis(post_BA_IUMCA[[1]], pars = c(c('a0', 'B', 'va')), depth = 2, prob = .9)
 
 
 #plot goodness of fit for best performing model
