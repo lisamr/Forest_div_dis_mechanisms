@@ -16,7 +16,7 @@ transformed parameters{
   mu = a0 + X*B;
 }
 model {
-  a0 ~ normal(-1, 1);
+  a0 ~ normal(3, 1);
   B ~ normal(0, 1);
   phi ~ normal(0, 1);
   target += neg_binomial_2_log_lpmf(y |mu, phi);

@@ -85,7 +85,6 @@ datalist_MS <- make_datalists_GLM(as.integer(plot_level$n_MS), covariates) # 4. 
 
 
 
-
 #run models------------------------------------------------------------
 
 #fit models
@@ -127,10 +126,10 @@ ppc_multiplot2 <- cowplot::plot_grid(p1, p2, p3, nrow = 1)
 #Export---------------------------------------------------------------
 
 #save models
-saveRDS(fit_gamma, '../../../Box/Stan_model_outputs/Big_Sur/fit_basal_area_all.RDS')
+saveRDS(fit_basal_area_all, '../../../Box/Stan_model_outputs/Big_Sur/fit_basal_area_all.RDS')
 saveRDS(fit_top2, '../../../Box/Stan_model_outputs/Big_Sur/fit_hurdle_top2spp.RDS')
-saveRDS(fit_NB_HS, '../../../Box/Stan_model_outputs/Big_Sur/fit_nindividuals_HS.RDS')
-saveRDS(fit_NB_MS, '../../../Box/Stan_model_outputs/Big_Sur/fit_nindividuals_MS.RDS')
+saveRDS(fit_HS, '../../../Box/Stan_model_outputs/Big_Sur/fit_nindividuals_HS.RDS')
+saveRDS(fit_MS, '../../../Box/Stan_model_outputs/Big_Sur/fit_nindividuals_MS.RDS')
 
 
 #save posterior predictive checks
