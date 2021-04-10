@@ -3,8 +3,8 @@ data {
   int<lower=1> K; //number of covariates
   int<lower=0> y[N]; //density
   matrix[N,K] X; //covariate matrix
-  //int<lower=0> Nsim; 
-  //matrix[Nsim, K] Xsim; //data to predict
+  int<lower=0> Nsim; 
+  matrix[Nsim, K] Xsim; //data to predict
 }
 parameters {
   real a0;
@@ -24,10 +24,10 @@ model {
 generated quantities{
   vector[N] log_lik;
   vector[N] y_rep; //for goodness of fit (same data)
-  //vector[Nsim] mu_sim; //predicting to new data
+  vector[Nsim] mu_sim; //predicting to new data
   for(i in 1:N){
     y_rep[i] = neg_binomial_2_log_rng(mu[i], phi);    
     log_lik[i] = neg_binomial_2_log_lpmf(y[i] | mu[i], phi);
   }
-  //mu_sim = exp(a0 + Xsim*B);
+  mu_sim = exp(a0 + Xsim*B);
 }

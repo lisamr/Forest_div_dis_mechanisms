@@ -129,9 +129,12 @@ CCsmaller <- CC %>%
   mutate_at(vars(CCmedian:upper), function(x) x/100)
 plotdf$CC <- (plotdf$ccompsqrt^2)/100
 
+#filter out predictions above 6 for redwood forests
+CCsmaller <- CCsmaller %>% 
+  filter(!(Richness > 6 & ForestAllianceType == 2))
 plot_CC_Rich <- ggplot(CCsmaller, aes(Richness, CCmedian, group = ForestAllianceType)) +
   geom_line(aes(color = ForestAllianceType)) +
-  geom_point(data = plotdf, aes(Richness, CC, color = ForestAllianceType), alpha = .5 ) +
+  geom_jitter(data = plotdf, aes(Richness, CC, color = ForestAllianceType), alpha = .5,width = .15, height = 0 ) +
   geom_ribbon(aes(ymin = lower, ymax = upper, fill = ForestAllianceType), alpha = .2) +#, fill = '#2171b5'
   geom_line(aes(color = ForestAllianceType)) + #'#2171b5'
   labs(x = 'Richness') +

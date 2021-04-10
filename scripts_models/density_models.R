@@ -61,10 +61,15 @@ BA_spp_separated <- expand_grid(BSPlotNumber = plot_level$BSPlotNumber,
 #prep datalists----------------------------------------------------
 
 # Datalists for GLM models (gamma, NB, hurdle model with single species)
-Xsim <- expand_grid( #create new dataframe to predict posteriors to
-  Forest = c(0,1),
-  Richness_z = seq(min(plot_level$Richness_z), max(plot_level$Richness_z), length.out = 10)
-)
+#create new dataframe to predict posteriors to
+richness_key <- plot_level %>% 
+  distinct(Richness, Richness_z) %>% 
+  arrange(Richness)
+Xsim <- data.frame(
+  Forest = c(rep(0, 8), rep(1, 6)),
+  Richness_z = c(richness_key$Richness_z[1:8], richness_key$Richness_z[1:6]))
+
+
 make_datalists_GLM <- function(response, covariates){
   list(
     N = nrow(covariates),

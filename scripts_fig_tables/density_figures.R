@@ -26,11 +26,15 @@ tree_level <- read_csv('data/tree_level_data_all.csv')
 #Data wrangling----------------------------------------------------------------
 
 #dataframe used for posterior predictions
-Xsim <- expand_grid( 
-  ForestAllianceType = as.factor(c(0,1)),
-  Richness_z = seq(min(plot_level$Richness_z), max(plot_level$Richness_z), length.out = 10)
-) %>% 
-  mutate(Richness = unzscore(Richness_z, plot_level$Richness))
+richness_key <- plot_level %>% 
+  distinct(Richness, Richness_z) %>% 
+  arrange(Richness)
+Xsim <- data.frame(
+  ForestAllianceType = as.factor(c(rep(0, 8), rep(1, 6))),
+  Richness_z = c(richness_key$Richness_z[1:8], richness_key$Richness_z[1:6]))
+Xsim <- Xsim %>% 
+  left_join(richness_key)
+
 
 #Data for plotting
 # 1. BA of all species
@@ -68,38 +72,38 @@ occurence_spp_separated <- spp_separated %>%
 #basal area of all species
 post_all <- extract.samples(fit_basal_area_all) 
 tidybayes::median_hdci(post_all$B[,2], .width = .9)
-#y       ymin      ymax .width .point .interval
-#1 -0.02501688 -0.1618321 0.1067124    0.9 median      hdci
+#            y       ymin      ymax .width .point .interval
+#1 -0.02590309 -0.1548707 0.1050154    0.9 median      hdci
 
 #basal area of top 6 species
 post_spp <- lapply(fit_top2, extract.samples) 
 sapply(post_spp, function(x) tidybayes::median_hdci(x$B[,2], .width = .9)) %>% t
-#y           ymin       ymax       .width .point   .interval
-#LIDE -0.08415664 -0.3109878 0.1239744  0.9    "median" "hdci"   
-#UMCA -0.1522891  -0.3165018 0.02670722 0.9    "median" "hdci"  
+#y           ymin       ymax       .width .point  
+#LIDE -0.09314822 -0.3014141 0.1247253  0.9    "median"
+#UMCA -0.1525837  -0.3184524 0.01065815 0.9    "median"
+#.interval
+#LIDE "hdci"   
+#UMCA "hdci"  
 
 
 #probability of occurrence for top 6 species
 sapply(post_spp, function(x) tidybayes::median_hdci(x$Bz[,2], .width = .9)) %>% t
-#y          ymin       ymax       .width .point   .interval
-#LIDE -0.5233184 -1.145344 0.08991939 0.9    "median" "hdci"
-#UMCA -1.864078  -2.666625 -1.073383  0.9    "median" "hdci" 
-
+#y          ymin      ymax       .width .point   .interval
+#LIDE -0.5142044 -1.139017 0.07293712 0.9    "median" "hdci"   
+#UMCA -1.841963  -2.59295  -1.035154  0.9    "median" "hdci"  
 
 #Highly susceptible individuals
 post_HS <- extract.samples(fit_HS) 
 tidybayes::median_hdci(post_HS$B[,2], .width = .9)
 #y       ymin      ymax .width .point .interval
-#1 0.1345237 -0.1027169 0.3515275    0.9 median      hdci
+#1 0.1211992 -0.1073218 0.3455627    0.9 median      hdci
 
 
 #Minimally susceptible individuals
 post_MS <- extract.samples(fit_MS) 
 tidybayes::median_hdci(post_MS$B[,2], .width = .9)
 #y     ymin     ymax .width .point .interval
-#1 1.344762 1.054569 1.679182    0.9 median      hdci
-
-
+#1 1.333279 1.002283 1.631373    0.9 median      hdci
 
 
 #Figure for Basal area or No. individuals--------------------------------------------
@@ -137,11 +141,11 @@ plot_figures <- function(posterior, dat, response, Title, y.axis, legend.loc = '
          color = 'Forest type', fill = 'Forest type') +
     theme(legend.position = legend.loc, legend.justification='center', plot.title = element_text(hjust = 0.5)) 
   
-  if(is.null(occurrence)){
+  #if(is.null(occurrence)){
     p <- p + geom_jitter(data = dat, 
                   aes(Richness, !!response, color = as.factor(ForestAllianceType)),
                   alpha = .7, width = .15, height = 0)
-  } 
+  #} 
   return(p)
 }
 
@@ -165,7 +169,7 @@ plot_grid(plotlist = BA_spp_plots)
 #top 6 species occurrence probability
 Occurrence_spp_plots <- list(NULL)
 for(i in 1:length(spp_names)){
-  Occurrence_spp_plots[[i]] <- plot_figures(post_spp[[i]], Title = spp_names[i], y.axis = 'P(Occurrence)', occurrence = T) + figure_theme
+  Occurrence_spp_plots[[i]] <- plot_figures(post_spp[[i]], occurence_spp_separated[[i]], Present, Title = spp_names[i], y.axis = 'P(Occurrence)', occurrence = T) + figure_theme
 }
 plot_grid(plotlist = Occurrence_spp_plots) 
 
