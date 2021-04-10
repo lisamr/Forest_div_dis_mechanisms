@@ -64,9 +64,9 @@ model{
   betaS ~ normal(0, 1); 
   LS ~ lkj_corr_cholesky(2);
   //priors for GP
-  eta ~ normal(0, 1);
+  eta ~ normal(0, 1.5);
   sigma ~ normal(0, 1);
-  rhoGP ~ normal(0, 1);
+  rhoGP ~ normal(0, 3);
   zplot ~ normal(0, 1);
 
   //likelihood
