@@ -93,11 +93,11 @@ post_indlevel <- sampling(stan_bern, datalists_indlevel, iter = 2000, chains = 4
 
 
 #export models--------------------------------------------
-saveRDS(post_indlevel, '../../../../Box/Stan_model_outputs/Big_Sur/post_indlevel_GP.RDS')
+saveRDS(post_indlevel, '../../../Box/Stan_model_outputs/Big_Sur/post_indlevel_GP.RDS')
 
 
 #read in models-----------------------------------
-post_indlevel <- read_rds('../../../../Box/Stan_model_outputs/Big_Sur/post_indlevel_GP.RDS')
+post_indlevel <- read_rds('../../../Box/Stan_model_outputs/Big_Sur/post_indlevel_GP.RDS')
 
 
 
@@ -108,12 +108,12 @@ precis(post_indlevel, pars = c(c('bBA', 'betap', 'betaS', 'zS', 'eta_sq', 'rho_s
 #need to add zS to mean to get the values you report in the paper
 samp_indlevel <- extract.samples(post_indlevel)
 apply(samp_indlevel$betaS[,2] + samp_indlevel$zS[,2,], 2, HPDI, .9)
-#[,1]      [,2]      [,3]      [,4]
-#|0.9 -1.7020691 -1.155407 -0.583679 0.1998709
-#0.9|  0.3483102  1.122726  1.940522 2.3254298
+#[,1]      [,2]       [,3]      [,4]
+#|0.9 -1.7948924 -1.159082 -0.6247144 0.1393561
+#0.9|  0.2823888  1.169797  1.9877729 2.3907762
 
 #individual-level M2 (non-GP)
-post_indlevel_nonGP <- read_rds('../../../../Box/Stan_model_outputs/Big_Sur/post_indlevel.RDS')
+post_indlevel_nonGP <- read_rds('../../../Box/Stan_model_outputs/Big_Sur/post_indlevel.RDS')
 precis(post_indlevel_nonGP[[2]], pars = c(c('bBA', 'betap', 'betaS', 'zS')), depth = 3, prob = .9)
 samp_indlevel <- extract.samples(post_indlevel_nonGP[[2]])
 apply(samp_indlevel$betaS[,2] + samp_indlevel$zS[,2,], 2, HPDI, .9)
@@ -125,12 +125,12 @@ apply(samp_indlevel$betaS[,2] + samp_indlevel$zS[,2,], 2, HPDI, .9)
 
 #contrast models with loo-------------------------
 
-loo_indlevel <- lapply(list(post_indlevel[[1]], post_indlevel_nonGP[[2]]), loo)
+loo_indlevel <- lapply(list(post_indlevel, post_indlevel_nonGP[[2]]), loo) #all pareto k values < 0.7
 loo_compare(loo_indlevel)
 #> loo_compare(loo_indlevel)
 #elpd_diff se_diff
-#model1  0.0       0.0  (GP) 
-#model2 -0.4       0.4  (Non-GP)
+#model2  0.0       0.0  (non-GP) 
+#model1 -0.3       0.4  (GP)
 
 
 
