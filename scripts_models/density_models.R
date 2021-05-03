@@ -1,6 +1,6 @@
 #models for assessing various measurements of density against richness in the 2 forest types. All models include predictors for plot richness and forest type. Response variables below:
 # 1. Basal area of all species (gamma)
-# 2. Basal area of top 6 most common species (hurdle model--bernoulli, gamma). Needed to run each of the species seperately since they were so different from each other. 
+# 2. Basal area of tanoak and bay laurel, run seperately (hurdle model--bernoulli, gamma). 
 # 3. Number of individuals from highly susceptible hosts (negative binomial)
 # 4. Number of individuals from minimally susceptible hosts (negative binomial)
 

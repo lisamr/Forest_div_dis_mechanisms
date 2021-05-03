@@ -56,17 +56,17 @@ km <- as.vector(dist(cbind(plot_level$Easting, plot_level$Northing)))/1000
 
 data.frame(d = km) %>% 
   ggplot(., aes(d)) +
-  geom_histogram(aes(fill = d > .75),  
+  geom_histogram(aes(fill = d > 1.25),  
                  binwidth = .5, color = NA) +
   scale_fill_manual(values = c('firebrick4', 'grey80'),
                     name = 'Distance',
-                    labels = c(expression(""<=" 0.75 km"), '> 0.75 km')) +
+                    labels = c(expression(""<=" 1.25 km"), '> 1.25 km')) +
   labs(x = "Distance (km)", y = 'Frequency', title = "Pairwise distances between plots") 
 
 
 ggsave('figures/histogram_of_distances.pdf', width = 5, height = 3)
 
-sum(km < .75) / length(km) #.8 % of plots are within .75 km
+sum(km < 1.25) / length(km) # 2% of plots are within 1.25 km
 
 
 
@@ -75,7 +75,7 @@ post_indlevel <- read_rds('../../../Box/Stan_model_outputs/Big_Sur/post_indlevel
 dmat <- read_rds('data/dmat.RDS')
 
 #plot posterior of covariance
-postGP <- rethinking::extract.samples(post_indlevel[[1]])
+postGP <- rethinking::extract.samples(post_indlevel)
 
 # compute posterior median covariance among plots
 Kmedian <- matrix(0,nrow=151,ncol=151)
