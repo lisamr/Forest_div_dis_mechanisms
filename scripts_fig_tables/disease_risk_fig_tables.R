@@ -48,9 +48,9 @@ make_table <- function(summary_list, Title, parnames){
 }
 
 #define some stuff for making a nice table
-model_names <- list('Richness only', 'Richness + density of key hosts', 'Richness + community competency')
-model_variables <- list('Richness', c('Richness', 'Bay laurel basal area', 'Tanoak basal area'), c('Richness', 'Community competency'))
-parnames_binom <- c("a0",  "Year*", "Forest type**", "Host vegetative coverage","Precipitation",  "Potential solar induction", "Richness", "Bay laurel basal area", "Tanoak basal area",  "Community competency", "theta")
+model_names <- list('Richness only', 'Richness + density of key hosts', 'Richness + community competence')
+model_variables <- list('Richness', c('Richness', 'Bay laurel basal area', 'Tanoak basal area'), c('Richness', 'Community competence'))
+parnames_binom <- c("a0",  "Year*", "Forest type**", "Host vegetative coverage","Precipitation",  "Potential solar induction", "Richness", "Bay laurel basal area", "Tanoak basal area",  "Community competence", "theta")
 
 
 #Beta-binomial models for all hosts
@@ -76,8 +76,8 @@ summarize_post_bern <- function(posterior, modelname, predictors){
   }else{
     x <- c('Tanoak intercept', 'Coast live oak intercept', 'Shreve oak intercept', 'Bay laurel intercept', 'Tanoak-specific richness', 'Coast live oak-specific richness', 'Shreve oak-specific richness', 'Bay laurel-specific richness', 'Basal area of individual',  'Forest type**', 'Year*', 'Precipitation', 'Potential solar induction', 'Host vegetative coverage', predictors, 'Mean effect of richness', 'Species SD', 'Richness slope SD', 'Plot SD')
   }
-  sp_ints <- posterior$betaS[,1]  + posterior$zS[,1,]
-  sp_rich <- posterior$betaS[,2]  + posterior$zS[,2,]
+  sp_ints <- posterior$betaS[,1]  + posterior$z[,1,]
+  sp_rich <- posterior$betaS[,2]  + posterior$z[,2,]
   postdf <- data.frame(cbind(sp_ints, sp_rich, posterior$bBA, posterior$betap, posterior$betaS[,2], posterior$sigmaS, posterior$sdPlot))
   #postdf <- with(posterior, cbind(aSp, bd, bBA, betap, bbar, sigma_pars, sdPlot) %>% data.frame)
   colnames(postdf) <- x 
@@ -90,12 +90,12 @@ summarize_post_bern <- function(posterior, modelname, predictors){
 
 #Bernoulli models for highly symptomatic hosts
 draws_indlevel <- lapply(post_indlevel, extract.samples)
-model_variables_bern <- list(NULL, c('Bay laurel basal area', 'Tanoak basal area'), c('Community competency'))
+model_variables_bern <- list(NULL, c('Bay laurel basal area', 'Tanoak basal area'), c('Community competence'))
 summary_indlevel <- list(NULL)
 for(i in 1:3){
   summary_indlevel[[i]] <- summarize_post_bern(draws_indlevel[[i]], model_names[[i]], model_variables_bern[[i]])
 }
-parnames_bern <- c('Tanoak intercept', 'Coast live oak intercept', 'Shreve oak intercept', 'Bay laurel intercept','Basal area of individual', 'Forest type**', 'Year*', 'Precipitation', 'Potential solar induction', 'Host vegetative coverage', 'Mean effect of richness', 'Tanoak-specific richness', 'Coast live oak-specific richness', 'Shreve oak-specific richness', 'Bay laurel-specific richness', 'Bay laurel basal area', 'Tanoak basal area', 'Community competency', 'Species SD', 'Richness slope SD', 'Plot SD')
+parnames_bern <- c('Tanoak intercept', 'Coast live oak intercept', 'Shreve oak intercept', 'Bay laurel intercept','Basal area of individual', 'Forest type**', 'Year*', 'Precipitation', 'Potential solar induction', 'Host vegetative coverage', 'Mean effect of richness', 'Tanoak-specific richness', 'Coast live oak-specific richness', 'Shreve oak-specific richness', 'Bay laurel-specific richness', 'Bay laurel basal area', 'Tanoak basal area', 'Community competence', 'Species SD', 'Richness slope SD', 'Plot SD')
 flextab_bern <- make_table(summary_indlevel, 'Posterior estimates (median log-odds, 90% HDPI): Individual-level infection risk for susceptible species', parnames_bern)
 
 
@@ -113,12 +113,12 @@ flextab_bern <- make_table(summary_indlevel, 'Posterior estimates (median log-od
 #plot ODDS
 plotlevel_coefs_ODDS <- function(summary_list, Title){
   plotdf <- bind_rows(summary_list) %>% 
-    filter(variable %in% c('Richness', "Bay laurel basal area", 'Tanoak basal area', 'Community competency')) %>% 
+    filter(variable %in% c('Richness', "Bay laurel basal area", 'Tanoak basal area', 'Community competence')) %>% 
     mutate_at(vars(median:upper), exp) %>% 
     mutate(significant = ifelse(lower<1 & upper>1, F, T)) %>% 
     mutate_at(vars(model, variable), as.factor) %>% 
-    mutate(variable = fct_relevel(variable, 'Richness', "Bay laurel basal area", 'Tanoak basal area', 'Community competency'),
-           variable = fct_recode(variable, "Bay laurel \nbasal area" = "Bay laurel basal area", 'Tanoak \nbasal area' = 'Tanoak basal area', 'Community \ncompetency' = 'Community competency'),
+    mutate(variable = fct_relevel(variable, 'Richness', "Bay laurel basal area", 'Tanoak basal area', 'Community competence'),
+           variable = fct_recode(variable, "Bay laurel \nbasal area" = "Bay laurel basal area", 'Tanoak \nbasal area' = 'Tanoak basal area', 'Community \ncompetence' = 'Community competence'),
            model = fct_relevel(model, 'Richness only', "Richness + density of key hosts"))
   
   ggplot(plotdf, aes(median, fct_rev(variable), color = model)) +
@@ -182,7 +182,7 @@ p5_ODDS <- plotdf_slope_ODDS %>%
                       fatten = 2.5) +
   scale_linetype_manual(guide = 'none', values = c('solid', '11')) +
   scale_shape_manual(guide = 'none', values = c(19, 1)) +
-  scale_color_manual(values = wes_palettes$FantasticFox1[c(1,2,3)], guide = guide_legend(reverse = F), labels = c('Richness only', 'Richness + \ndensity of key hosts', 'Richness + \ncommunity competency')) +
+  scale_color_manual(values = wes_palettes$FantasticFox1[c(1,2,3)], guide = guide_legend(reverse = F), labels = c('Richness only', 'Richness + \ndensity of key hosts', 'Richness + \ncommunity competence')) +
   labs(color = 'Model', x = 'Odds ratio',  title = 'Species-specific \nrichness effects') +
   theme(legend.position ='bottom',  
         axis.title.y = element_blank(), 
