@@ -185,7 +185,7 @@ pMS <- plot_figures(post_MS, plot_level, n_MS, 'Rarely \nsymptomatic hosts', 'No
 
 #Basal area + occurence + n.plants figure
 pgrid1 <- plot_grid(
-  plot_BA_all + xlab("") + 
+  plot_BA_all  + 
     theme(legend.position = 'none'),  
   get_legend(plot_BA_all),
   nrow = 2, labels = c("A")
@@ -193,17 +193,15 @@ pgrid1 <- plot_grid(
 
 pgrid2 <- plot_grid(
   BA_spp_plots[[1]]+ xlab(""), #+ theme(axis.title.y = element_blank()),
-  BA_spp_plots[[2]] + xlab("") + 
-    theme(axis.title.y = element_blank()),
+  BA_spp_plots[[2]] + xlab(""), #+ theme(axis.title.y = element_blank()),
   Occurrence_spp_plots[[1]], 
-  Occurrence_spp_plots[[2]]+ xlab("") + 
-    theme(axis.title.y = element_blank()) ,
-  nrow = 2, labels = 'B'
+  Occurrence_spp_plots[[2]], #+ theme(axis.title.y = element_blank()) ,
+  nrow = 2, labels = c('B', 'C', '', '')
 )
 
 pgrid3 <- plot_grid(pHS + xlab('') + figure_theme, 
                     pMS + theme(legend.position = 'none')+ figure_theme,
-                    nrow = 2, labels = 'C')
+                    nrow = 2, labels = c('D', 'E'))
 
 final_fig <- plot_grid(pgrid1, pgrid2, pgrid3, 
           nrow = 1, rel_widths = c(1, 2, 1), scale = .95)
