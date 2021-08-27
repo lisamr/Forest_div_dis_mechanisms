@@ -1,5 +1,5 @@
 # Forest_div_dis_mechanisms
-Model code and data used for the manuscript: "Direction and underlying mechanisms of the diversity-disease relationship are distinct across hierarchical scales"
+Model code and data used for the manuscript: "Community-level prevalence of a forest pathogen, not individual-level disease risk, declines with tree diversity", published in Ecology Letters.
 
 ## Data is located in the "data" folder
 - plot_level_data.csv = plot-level attributes  
